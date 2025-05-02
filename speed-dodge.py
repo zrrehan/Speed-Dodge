@@ -55,14 +55,30 @@ def draw_shapes():
 
 
 def keyboardListener(key, x, y):
-    global cheat_mode, fp_view, camera_pos
+    global cheat_mode, fp_view, camera_pos, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
         fp_view = not fp_view
+    if(key == b"r" and game_over):
+        camera_pos = (0,500,300)
+        point = 0
+        road_line_y = [-400, 200] # (y) as x and z = 0 always 
+        car_pos = 1
+        lane = [400, 0, -400]
+        obstacle_y = -600
+        obstacle_x = 0
+        game_over = False
+        police_pos = 1
+        police_y = 750
+        obstacle_speed = 1
+        cheat_mode = False
+        hit = 0
+        fp_view = False
 
 
 def specialKeyListener(key, x, y):
+    if(game_over): return
     global car_pos
     if(key == GLUT_KEY_RIGHT):
         if(car_pos != 2):
@@ -70,6 +86,7 @@ def specialKeyListener(key, x, y):
     if(key == GLUT_KEY_LEFT):
         if(car_pos != 0):
             car_pos -= 1
+            
 
         
 
@@ -215,8 +232,16 @@ def showScreen():
 
 
     # Display game info text at a fixed screen position
-    draw_text(10, 770, f"A Random Fixed Position Text")
-    draw_text(10, 740, f"Total Point: {point}")
+    draw_text(10, 770, f"Total Point: {point}")
+    if(cheat_mode):
+        draw_text(10, 750, "Cheat Mode Activated")
+    else:
+        draw_text(10, 750, "Cheat Mode is not Activated")
+
+    if(hit == 1):
+        draw_text(760, 750, "Police is chasing")
+    elif(hit == 2):
+        draw_text(700, 750, "Game Over! Press 'R' to restart")
 
     draw_shapes()
 
