@@ -1,0 +1,243 @@
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+import random
+
+# Camera-related variables
+camera_pos = (0,500,300)
+# camera_pos = (0, 290, 100)
+
+fovY = 120  # Field of view
+GRID_LENGTH = 600  # Length of grid lines
+point = 0
+road_line_y = [-400, 200] # (y) as x and z = 0 always 
+car_pos = 1
+lane = [400, 0, -400]
+obstacle_y = -600
+obstacle_x = 0
+game_over = False
+police_pos = 1
+police_y = 750
+obstacle_speed = 1
+cheat_mode = False
+hit = 0
+fp_view = False
+
+
+def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
+    glColor3f(1,1,1)
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    
+    # Set up an orthographic projection that matches window coordinates
+    gluOrtho2D(0, 1000, 0, 800)  # left, right, bottom, top
+
+    
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+    
+    # Draw text at (x, y) in screen coordinates
+    glRasterPos2f(x, y)
+    for ch in text:
+        glutBitmapCharacter(font, ord(ch))
+    
+    # Restore original projection and modelview matrices
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+
+
+def draw_shapes():
+    pass
+
+
+def keyboardListener(key, x, y):
+    global cheat_mode, fp_view, camera_pos
+    if(key == b"c"):
+        cheat_mode = not cheat_mode
+    if(key == b"f"):
+        fp_view = not fp_view
+
+
+def specialKeyListener(key, x, y):
+    global car_pos
+    if(key == GLUT_KEY_RIGHT):
+        if(car_pos != 2):
+            car_pos += 1
+    if(key == GLUT_KEY_LEFT):
+        if(car_pos != 0):
+            car_pos -= 1
+
+        
+
+
+def setupCamera():
+    glMatrixMode(GL_PROJECTION)  # Switch to projection matrix mode
+    glLoadIdentity()  # Reset the projection matrix
+    # Set up a perspective projection (field of view, aspect ratio, near clip, far clip)
+    gluPerspective(fovY, 1.25, 0.1, 1500) # Think why aspect ration is 1.25?
+    glMatrixMode(GL_MODELVIEW)  # Switch to model-view matrix mode
+    glLoadIdentity()  # Reset the model-view matrix
+
+    # Extract camera position and look-at target
+    x, y, z = camera_pos
+    # Position the camera and set its orientation
+    if(fp_view):
+        gluLookAt(x, y, z,  # Camera position
+              lane[car_pos], 0, 0,  # Look-at target
+              0, 0, 1)  # Up vector (z-axis)
+    else:
+        gluLookAt(x, y, z,  # Camera position
+              0, 0, 0,  # Look-at target
+              0, 0, 1)  # Up vector (z-axis)
+
+
+def idle():
+    glutPostRedisplay()
+
+def change_line_y():
+    if(game_over): return
+    global road_line_y
+    for i in range(len(road_line_y)):
+        road_line_y[i] += obstacle_speed
+        if(road_line_y[i] >= 600):
+            road_line_y[i] = -600
+def road_line():
+    glPushMatrix()
+    glColor3f(1, 1, 1)
+    glTranslatef(0, road_line_y[0], 0)
+    glScalef(30, 100, 2)
+    glutSolidCube(1)
+    glPopMatrix()
+
+    glPushMatrix()
+    glColor3f(1, 1, 1)
+    glTranslatef(0, road_line_y[1], 0)
+    glScalef(30, 100, 2)
+    glutSolidCube(1)
+    glPopMatrix()
+
+def car_show():
+    global camera_pos
+    glPushMatrix()
+    glColor3f(1, 1, 0)
+    glTranslatef(lane[car_pos], 300, 0)
+    glScalef(100, 200, 20)
+    glutSolidCube(1)
+    glPopMatrix()
+
+    if(fp_view):
+        camera_pos = (lane[car_pos], 290, 100)
+    else:
+        camera_pos = (0,500,300)
+
+def random_obstacle():
+    glPushMatrix()
+    glColor3f(0, 1, 1)
+    glTranslatef(obstacle_x, obstacle_y, 0)
+    glutSolidCube(100)
+    glPopMatrix()
+
+def move_obstacle():
+    global obstacle_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos
+    if(game_over): return
+    if(obstacle_y >= 600):
+        obstacle_x = random.choice([400, 0, -400])
+        obstacle_y = -600
+        point += 1
+        if(point <= 220):
+            obstacle_speed += 0.075
+    else:
+        obstacle_y += obstacle_speed
+    
+    if(obstacle_x == lane[car_pos] and 120 <= obstacle_y <= 250 ):
+        obstacle_x = random.choice([400, 0, -400])
+        obstacle_y = -600
+        hit += 1
+        if(hit == 1):
+            police_y = 550
+        elif(hit == 2):
+            game_over = True 
+    
+    if(cheat_mode and 100 <= obstacle_y <= 119 and obstacle_x == lane[car_pos]):
+        if(car_pos == 2):
+            car_pos -= 1
+        elif(car_pos == 1):
+            car_pos += random.choice([1, -1])
+        else: 
+            car_pos += 1
+        obstacle_y = 120
+        
+
+def police_show():
+    glPushMatrix()
+    glColor3f(1, 0, 0)
+    glTranslatef(lane[car_pos], police_y, 0)
+    glScalef(100, 200, 20)
+    glutSolidCube(1)
+    glPopMatrix()
+
+def showScreen():
+    """
+    Display function to render the game scene:
+    - Clears the screen and sets up the camera.
+    - Draws everything of the screen
+    """
+    # Clear color and depth buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()  # Reset modelview matrix
+    glViewport(0, 0, 1000, 800)  # Set viewport size
+
+    setupCamera()  # Configure camera perspective
+
+    # Draw the grid (game floor)
+    glBegin(GL_QUADS)
+    
+    glColor3f(0.48, 0.46, 0.46)
+    glVertex3f(600, -600, 0)
+    glVertex3f(-600, -600, 0)
+    glVertex3f(-600, +600, 0)
+    glVertex3f(600, 600, 0)
+    glEnd()
+
+    # road line 
+    change_line_y()
+    road_line()
+
+    random_obstacle()
+    move_obstacle()
+    car_show()
+
+    police_show()
+
+
+    # Display game info text at a fixed screen position
+    draw_text(10, 770, f"A Random Fixed Position Text")
+    draw_text(10, 740, f"Total Point: {point}")
+
+    draw_shapes()
+
+    # Swap buffers for smooth rendering (double buffering)
+    glutSwapBuffers()
+
+
+# Main function to set up OpenGL window and loop
+def main():
+    glutInit()
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)  # Double buffering, RGB color, depth test
+    glutInitWindowSize(1000, 800)  # Window size
+    glutInitWindowPosition(0, 0)  # Window position
+    wind = glutCreateWindow(b"3D OpenGL Intro")  # Create the window
+
+    glutDisplayFunc(showScreen)  # Register display function
+    glutKeyboardFunc(keyboardListener)  # Register keyboard listener
+    glutSpecialFunc(specialKeyListener)
+    glutIdleFunc(idle)  # Register the idle function to move the bullet automatically
+
+    glutMainLoop()  # Enter the GLUT main loop
+
+if __name__ == "__main__":
+    main()
