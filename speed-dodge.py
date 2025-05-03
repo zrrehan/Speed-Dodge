@@ -51,7 +51,97 @@ def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
 
 
 def draw_shapes():
-    pass
+    def draw_shapes():
+
+    tree_shift = road_line_y[0]  
+    tree_spacing = 300
+    distance_from_road = 750  
+    pole_offset = 800  
+    bush_height = 20
+
+    # Roadside Bushes
+    glPushMatrix()
+    glColor3f(0.0, 0.8, 0.0)
+    glBegin(GL_QUADS)
+    for x in [-distance_from_road, distance_from_road]:
+        glVertex3f(x - 20, -600 + tree_shift, 0)
+        glVertex3f(x + 20, -600 + tree_shift, 0)
+        glVertex3f(x + 20, 800 + tree_shift, 0)
+        glVertex3f(x - 20, 800 + tree_shift, 0)
+    glEnd()
+    glPopMatrix()
+
+    # Roadside Trees
+    for x in [-distance_from_road, distance_from_road]:
+        for y in range(-600, 800, tree_spacing):
+            # Trunk
+            glPushMatrix()
+            glColor3f(0.55, 0.27, 0.07)
+            glTranslatef(x, y + tree_shift, 40)
+            glScalef(20, 20, 120)
+            glutSolidCube(1)
+            glPopMatrix()
+
+            # Leaves
+            glPushMatrix()
+            glColor3f(0.0, 0.6, 0.0)
+            glTranslatef(x, y + tree_shift, 120)
+            glScalef(60, 60, 60)
+            glutSolidSphere(1, 10, 10)
+            glPopMatrix()
+
+    # Random Trash Bins
+    random.seed(0)
+    for x in [-distance_from_road + 40, distance_from_road - 40]:
+        for y in range(-500, 800, 600):
+            glPushMatrix()
+            glColor3f(0.4, 0.4, 0.4)
+            glTranslatef(x, y + tree_shift, 15)
+            glScalef(15, 15, 30)
+            glutSolidCube(1)
+            glPopMatrix()
+    
+
+    # Lampposts with lights
+    lamp_positions = []
+    for x in [-pole_offset, pole_offset]:
+        for y in range(-600, 800, 400):
+            y_shifted = y + tree_shift
+            lamp_positions.append((x, y_shifted))
+
+            # Pole
+            glPushMatrix()
+            glColor3f(0.7, 0.7, 0.7)
+            glTranslatef(x, y_shifted, 60)
+            glScalef(8, 8, 180)
+            glutSolidCube(1)
+            glPopMatrix()
+
+            # Lamp Glow (Night Mode)
+            glPushMatrix()
+            glColor3f(1.0, 1.0, 0.5)
+            glTranslatef(x, y_shifted, 130)
+            glScalef(25, 25, 25)
+            glutSolidCube(1)
+            glPopMatrix()
+
+    # Parabolic Electric Wires
+    glColor3f(0.2, 0.4, 0.2) 
+    for i in range(0, len(lamp_positions) - 2, 2):
+        if lamp_positions[i][0] == lamp_positions[i + 2][0]:
+            x = lamp_positions[i][0]
+            y1 = lamp_positions[i][1]
+            y2 = lamp_positions[i + 2][1]
+            z_top = 130
+
+            glBegin(GL_LINE_STRIP)
+            for t in range(0, 101):
+                t_norm = t / 100
+                y = y1 + (y2 - y1) * t_norm
+                z = z_top - 20 * math.sin(math.pi * t_norm) #center point
+                glVertex3f(x, y, z)
+            glEnd()
+
 
 
 def keyboardListener(key, x, y):
