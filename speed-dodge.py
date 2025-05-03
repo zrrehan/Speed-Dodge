@@ -2,6 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import random
+import math
 
 # Camera-related variables
 camera_pos = (0,500,300)
@@ -51,8 +52,6 @@ def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
 
 
 def draw_shapes():
-    def draw_shapes():
-
     tree_shift = road_line_y[0]  
     tree_spacing = 300
     distance_from_road = 750  
