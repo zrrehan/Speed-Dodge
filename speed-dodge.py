@@ -51,7 +51,7 @@ def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
     glMatrixMode(GL_MODELVIEW)
 
 
-def draw_shapes():
+def draw_road_surroundings():
     tree_shift = road_line_y[0]  
     tree_spacing = 300
     distance_from_road = 750  
@@ -332,7 +332,7 @@ def showScreen():
     elif(hit == 2):
         draw_text(700, 750, "Game Over! Press 'R' to restart")
 
-    draw_shapes()
+    draw_road_surroundings()
 
     # Swap buffers for smooth rendering (double buffering)
     glutSwapBuffers()
