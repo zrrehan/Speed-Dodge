@@ -90,7 +90,7 @@ def draw_shapes():
             glPopMatrix()
 
     # Random Trash Bins
-    random.seed(0)
+    # random.seed(0)
     for x in [-distance_from_road + 40, distance_from_road - 40]:
         for y in range(-500, 800, 600):
             glPushMatrix()
