@@ -219,7 +219,7 @@ def draw_obstacle_car(x, y, z=0):
     glPopMatrix()
 
 def keyboardListener(key, x, y):
-    global cheat_mode, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
+    global cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
@@ -241,6 +241,8 @@ def keyboardListener(key, x, y):
         fp_view = False
         bullets.clear()
         nightmare = False
+        color = 0
+        wind_shield = 30    
     elif key == b' ':
         if(total_bullet > 0):
             car_x = lane[car_pos]
