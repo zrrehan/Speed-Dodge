@@ -31,6 +31,17 @@ nightmare = False
 nightmare_prev_speed = 0 
 color = 0
 wind_shield = 30
+power_show = False 
+power_x = 0
+power_y = -600
+power_obtained = False
+
+def power_showcase():
+    glPushMatrix()
+    glColor3f(0.8, 0.5, 0.1)
+    glTranslatef(0, power_y, 0) 
+    gluSphere(gluNewQuadric(), 40, 10, 10)  # parameters are: quadric, radius, slices, stacks
+    glPopMatrix()
 
 
 def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
@@ -424,7 +435,7 @@ def random_obstacle():
     glPopMatrix()
 
 def move_obstacle():
-    global obstacle_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color
+    global obstacle_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color, power_show, power_y
     if(game_over): return
     if(obstacle_y >= 600):
         obstacle_x = random.choice([400, 0, -400])
@@ -457,6 +468,18 @@ def move_obstacle():
         else: 
             car_pos += 1
         obstacle_y = 120
+    
+    if(point % 5 == 0 and point != 0):
+        if(not power_show):
+            power_show = True
+    
+    if(power_show):
+        power_showcase()
+        power_y += 1.3
+        if(power_y >= 600):
+            power_show = False
+            power_y = -600
+        
         
 
 def police_show():
@@ -535,6 +558,7 @@ def showScreen():
 
     random_obstacle()
     move_obstacle()
+    # power_showcase()
     if(point >=10):
         front_light()
     
