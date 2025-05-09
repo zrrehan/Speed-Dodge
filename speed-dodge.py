@@ -44,9 +44,11 @@ hole_active = True
 hole_hit = False
 hole_timer = 0
 hole_z_rise = 200 
-sky_mode = "day"        # 'day' or 'night'
+sky_mode = "night"        # 'day' or 'night'
 sky_transition = 1.0  
-sky_color = [0.5, 0.8, 0.92, 1.0]#
+sky_color = [0, 0, 0, 1.0]
+moon_sun_place = 200
+moon_color = 1
 
 def draw_circle(x, y, radius):
     glBegin(GL_TRIANGLE_FAN)
@@ -58,8 +60,11 @@ def draw_circle(x, y, radius):
 
 
 def draw_moon():
-    glColor3f(1.0, 1.0, 0.8)
-    draw_circle(0.7, 0.8, 0.1)
+    glPushMatrix()
+    glColor3f(1, 1, moon_color)
+    glTranslatef(moon_sun_place, -300, 400) 
+    gluSphere(gluNewQuadric(), 40, 10, 10)  # parameters are: quadric, radius, slices, stacks
+    glPopMatrix()
 
 
 def draw_clouds():
@@ -69,8 +74,8 @@ def draw_clouds():
     draw_circle(-0.5, 0.85, 0.07)
 
 def draw_sky():
-    global sky_transition, sky_color
-
+    global sky_transition, sky_color, moon_sun_place, moon_color
+    draw_moon()
     # Set based on sky_mode directly
     if sky_mode == "day":
         for i in range(len(sky_color) -1):
@@ -79,11 +84,21 @@ def draw_sky():
             if(i == 1 and sky_color[i] >= 0.8): sky_color[i] = 0.8
             if(i == 2 and sky_color[i] >= 0.92): sky_color[i] = 0.92
             if(i == 3 and sky_color[i] >= 1): sky_color[i] = 1
+        if(moon_sun_place >= -200):
+            moon_sun_place -= 10
+        if(moon_color >= 0):
+            moon_color -= 1
+
     elif sky_mode == "night":
+        
         for i in range(len(sky_color) -1):
             sky_color[i] -= 0.005
             if(sky_color[i] < 0.13):
                 sky_color[i] = 0
+        if(moon_sun_place <= 200):
+            moon_sun_place += 10
+        if(moon_color <= 1):
+            moon_color += 1
     glClearColor(sky_color[0], sky_color[1],sky_color[2], 1.0)
 
     r = sky_transition * 0.53
@@ -102,9 +117,9 @@ def draw_sky():
         draw_moon()
     elif sky_transition > 0.8:
         draw_clouds()
-    glPopMatrix()
+    # glPopMatrix()
     glMatrixMode(GL_PROJECTION)
-    glPopMatrix()
+    # glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 def draw_hole():
     if not hole_active:
@@ -274,7 +289,7 @@ def move_and_draw_bullets():
     bullets = new_bullets
 
 def update_hole():
-    global hole_y, hole_x, game_over, hole_active, hole_hit, camera_pos, hole_timer
+    global hole_y, hole_x, game_over, hole_active, hole_hit, camera_pos, hole_timer, hit
 
     if game_over:
         return
@@ -287,7 +302,7 @@ def update_hole():
         hole_hit = False
         hole_active = True
 
-    if not hole_hit and lane[car_pos] == hole_x and 250 <= hole_y <= 350 and not cheat_mode:
+    if not hole_hit and lane[car_pos] == hole_x and 250 <= hole_y <= 350 and not cheat_mode and not power_obtained:
         hole_hit = True
         hole_active = False
         game_over = True  
@@ -330,7 +345,7 @@ def draw_obstacle_car(x, y, z=0):
     glPopMatrix()
 
 def keyboardListener(key, x, y):
-    global sky_mode,sky_transition, cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over,  hole_x, hole_y, hole_active, hole_hit, hole_timer, hole_z_rise,
+    global sky_mode,sky_transition, cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over,  hole_x, hole_y, hole_active, hole_hit, hole_timer, hole_z_rise
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
@@ -360,7 +375,7 @@ def keyboardListener(key, x, y):
         hole_hit = False
         hole_timer = 0
         hole_z_rise = 200 
-   elif key == b'b':
+    elif key == b'b':
         sky_mode = "night"
         sky_transition = 0.0
     elif key == b'd':
@@ -377,6 +392,11 @@ def keyboardListener(key, x, y):
             obstacle_speed = 60
         else:
             obstacle_speed = nightmare_prev_speed
+    if key == b' ':
+        if(total_bullet > 0):
+            car_x = lane[car_pos]
+            bullets.append({'x': car_x, 'y': 300, 'z': 15})
+            total_bullet -= 1
     
 
 
@@ -569,8 +589,18 @@ def move_obstacle():
             police_y = 550
         elif(hit == 2):
             game_over = True 
-    
+
+    if(cheat_mode and 100 <= obstacle_y <= 119 and obstacle_x == lane[car_pos]):
+        if(car_pos == 2):
+            car_pos -= 1
+        elif(car_pos == 1):
+            car_pos += random.choice([1, -1])
+        else: 
+            car_pos += 1
+        obstacle_y = 120
+
     if(cheat_mode and 50 <= hole_y <= 150 and hole_x == lane[car_pos]):
+        print("hello cheat")
         if(car_pos == 2):
             car_pos -= 1
         elif(car_pos == 1):
