@@ -37,6 +37,7 @@ power_y = -600
 power_obtained = False
 power_prev_point = 0
 obstacle_speed_prev = 0 
+police_light_controller = 0
 
 def power_showcase():
     glPushMatrix()
@@ -200,14 +201,6 @@ def move_and_draw_bullets():
     
             
 def draw_police_car(x, y, z=0):
-    # Body
-    glPushMatrix()
-    glColor3f(1, 0, 0)  # Red
-    glTranslatef(x, y, z + 15)
-    glScalef(100, 200, 30)
-    glutSolidCube(1)
-    glPopMatrix()
-
     # Roof lights
     glPushMatrix()
     glColor3f(0, 0, 1)  # Blue light
@@ -501,24 +494,31 @@ def move_obstacle():
         
 
 def police_show():
+    global police_light_controller
+    police_light_controller += 1
+    if(police_light_controller > 100): police_light_controller = 0
+
     # Police car (realistic design)
+    wheel(lane[car_pos] -50, police_y -70, 0)
+    wheel(lane[car_pos] + 40, police_y -70, 0)
+    # draw_police_car(lane[police_pos], police_y)
+
     glPushMatrix()
-    glTranslatef(lane[police_pos], police_y, 0)
+    glTranslatef(lane[car_pos], police_y, 0)
     
-   # Wheels
-    for x_offset in [-60, 60]:
-        for z_offset in [-25, 25]:
-            glPushMatrix()
-            glColor3f(0.2, 0.4, 0.2)  # Black tires
-            glTranslatef(x_offset, 0, z_offset)
-            glRotatef(90, 0, 1, 0)
-            glutSolidTorus(10, 15, 10, 10)
-            glPopMatrix()
     
     
     # Main body
     glPushMatrix()
-    glColor3f(0.9, 0.9, 0.9)  # White base
+    if(police_light_controller < 25):
+        glColor3f(1, 0, 0)  # White base
+    elif(police_light_controller < 50):
+        glColor3f(0.9, 0.9, 0.9)  # White base
+    elif(police_light_controller < 75):
+        glColor3f(0, 0, 1)  
+    else:
+        glColor3f(0.9, 0.9, 0.9)  # White base
+
     glScalef(80, 160, 40)
     glutSolidCube(1)
     glPopMatrix()
@@ -540,13 +540,15 @@ def police_show():
     glPopMatrix()
     glPopMatrix()
 
-def police_show():
-    glPushMatrix()
-    glColor3f(1, 0, 0)
-    glTranslatef(lane[car_pos], police_y, 0)
-    glScalef(100, 200, 20)
-    glutSolidCube(1)
-    glPopMatrix()
+# def police_show():
+#     glPushMatrix()
+#     glColor3f(1, 0, 0)
+#     glTranslatef(lane[car_pos], police_y, 0)
+#     glScalef(100, 200, 20)
+#     glutSolidCube(1)
+#     glPopMatrix()
+
+
 def showScreen():
     """
     Display function to render the game scene:
