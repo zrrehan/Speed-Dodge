@@ -270,12 +270,13 @@ def update_hole():
         hole_hit = False
         hole_active = True
 
-    if not hole_hit and lane[car_pos] == hole_x and 250 <= hole_y <= 350:
+    if not hole_hit and lane[car_pos] == hole_x and 250 <= hole_y <= 350 and not cheat_mode:
         hole_hit = True
         hole_active = False
         game_over = True  
         camera_pos = (camera_pos[0], camera_pos[1], camera_pos[2] + hole_z_rise)
         hole_timer = 30  
+        hit = 2
 
 def handle_hole_z_timer():
     global camera_pos, hole_timer
@@ -312,7 +313,7 @@ def draw_obstacle_car(x, y, z=0):
     glPopMatrix()
 
 def keyboardListener(key, x, y):
-    global cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
+    global cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over,  hole_x, hole_y, hole_active, hole_hit, hole_timer, hole_z_rise
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
@@ -335,7 +336,13 @@ def keyboardListener(key, x, y):
         bullets.clear()
         nightmare = False
         color = 0
-        wind_shield = 30    
+        wind_shield = 30
+        hole_x = random.choice(lane)
+        hole_y = -1800
+        hole_active = True
+        hole_hit = False
+        hole_timer = 0
+        hole_z_rise = 200 
     elif key == b' ':
         if(total_bullet > 0):
             car_x = lane[car_pos]
@@ -517,7 +524,7 @@ def random_obstacle():
     glPopMatrix()
 
 def move_obstacle():
-    global obstacle_y,obstacle_speed_prev,power_prev_point,power_x, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color, power_show, power_y, power_obtained
+    global obstacle_y,obstacle_speed_prev,power_prev_point,power_x, hole_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color, power_show, power_y, power_obtained
     if(game_over): return
     if(obstacle_y >= 600):
         obstacle_x = random.choice([400, 0, -400])
@@ -542,14 +549,14 @@ def move_obstacle():
         elif(hit == 2):
             game_over = True 
     
-    if(cheat_mode and 100 <= obstacle_y <= 119 and obstacle_x == lane[car_pos]):
+    if(cheat_mode and 50 <= hole_y <= 150 and hole_x == lane[car_pos]):
         if(car_pos == 2):
             car_pos -= 1
         elif(car_pos == 1):
             car_pos += random.choice([1, -1])
         else: 
             car_pos += 1
-        obstacle_y = 120
+        hole_y = 120
     
     if(point % 5 == 0 and point != 0 and obstacle_speed_prev == 0):
         if(not power_show):
