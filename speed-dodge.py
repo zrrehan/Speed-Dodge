@@ -38,6 +38,21 @@ power_obtained = False
 power_prev_point = 0
 obstacle_speed_prev = 0 
 police_light_controller = 0
+hole_x = random.choice(lane)
+hole_y = -1800
+hole_active = True
+hole_hit = False
+hole_timer = 0
+hole_z_rise = 200 
+
+def draw_hole():
+    if not hole_active:
+        return
+    glPushMatrix()
+    glColor3f(0.05, 0.05, 0.05)
+    glTranslatef(hole_x, hole_y, -1)
+    gluDisk(gluNewQuadric(), 0, 50, 30, 1)
+    glPopMatrix()
 
 def power_showcase():
     glPushMatrix()
@@ -197,7 +212,35 @@ def move_and_draw_bullets():
             
     bullets = new_bullets
 
+def update_hole():
+    global hole_y, hole_x, game_over, hole_active, hole_hit, camera_pos, hole_timer
 
+    if game_over:
+        return
+
+    hole_y += obstacle_speed
+    
+    if hole_y > 800:
+        hole_y = -1800
+        hole_x = random.choice(lane)
+        hole_hit = False
+        hole_active = True
+
+    if not hole_hit and lane[car_pos] == hole_x and 250 <= hole_y <= 350:
+        hole_hit = True
+        hole_active = False
+        game_over = True  
+        camera_pos = (camera_pos[0], camera_pos[1], camera_pos[2] + hole_z_rise)
+        hole_timer = 30  
+
+def handle_hole_z_timer():
+    global camera_pos, hole_timer
+    if hole_timer > 0:
+        hole_timer -= 1
+    elif hole_timer == 0 and camera_pos[2] > 300:
+        camera_pos = (camera_pos[0], camera_pos[1], 300)  
+        hole_timer = -1  
+            
     
             
 def draw_police_car(x, y, z=0):
@@ -571,7 +614,10 @@ def showScreen():
     glVertex3f(-600, +600, 0)
     glVertex3f(600, 600, 0)
     glEnd()
-
+    #hole
+    update_hole()           
+    draw_hole()             
+    handle_hole_z_timer()
     # road line 
     change_line_y()
     road_line()
