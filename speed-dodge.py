@@ -19,7 +19,7 @@ obstacle_x = 0
 game_over = False
 police_pos = 1
 police_y = 750
-obstacle_speed = 1
+obstacle_speed = 2
 cheat_mode = False
 hit = 0
 fp_view = False
@@ -27,6 +27,8 @@ bullets = []
 bullet_speed = 10
 bullet_hit_count = 0
 total_bullet = 3
+nightmare = False
+nightmare_prev_speed = 0 
 
 
 def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
@@ -239,7 +241,7 @@ def draw_obstacle_car(x, y, z=0):
     glPopMatrix()
 
 def keyboardListener(key, x, y):
-    global cheat_mode, total_bullet, fp_view, camera_pos, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
+    global cheat_mode, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
@@ -265,6 +267,14 @@ def keyboardListener(key, x, y):
             car_x = lane[car_pos]
             bullets.append({'x': car_x, 'y': 300, 'z': 15})
             total_bullet -= 1
+    
+    if(key == b"n"):
+        nightmare = not nightmare
+        if(nightmare == True):
+            nightmare_prev_speed = obstacle_speed
+            obstacle_speed = 60
+        else:
+            obstacle_speed = nightmare_prev_speed
     
 
 
@@ -404,7 +414,7 @@ def move_obstacle():
         obstacle_y = -600
         point += 1
         if(point <= 220):
-            obstacle_speed += 0.075
+            obstacle_speed += 0.1
     else:
         obstacle_y += obstacle_speed
     
