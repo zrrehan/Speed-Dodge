@@ -26,6 +26,7 @@ fp_view = False
 bullets = []
 bullet_speed = 10
 bullet_hit_count = 0
+total_bullet = 3
 
 
 def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
@@ -153,17 +154,23 @@ def move_and_draw_bullets():
         # Draw bullet
         glPushMatrix()
         glColor3f(1, 1, 1)
-        glTranslatef(bullet['x'], bullet['y'], bullet['z'])
+        glTranslatef(lane[car_pos], bullet['y'], bullet['z'])
         glutSolidSphere(10, 10, 10)
         glPopMatrix()
-
+############################################################################################
         # Check for collision
-        if abs(bullet['x'] - obstacle_x) < 50 and abs(bullet['y'] - obstacle_y) < 50:
-            bullet_hit_count += 1
-            if bullet_hit_count == 3:
-                obstacle_y = -600
-                obstacle_x = random.choice([400, 0, -400])
-                bullet_hit_count = 0
+        # if abs(bullet['x'] - obstacle_x) < 50 and abs(bullet['y'] - obstacle_y) < 50:
+        #     bullet_hit_count += 1
+        #     if bullet_hit_count == 3:
+        #         obstacle_y = -600
+        #         obstacle_x = random.choice([400, 0, -400])
+        #         bullet_hit_count = 0
+        #     continue 
+        if(lane[car_pos] == obstacle_x  and  obstacle_y-500 <= bullet['y'] <= obstacle_y + 500):
+            
+            obstacle_y = -600
+            obstacle_x = random.choice([400, 0, -400])
+                
             continue 
         
        # Only keep bullets that are still on screen
@@ -172,6 +179,15 @@ def move_and_draw_bullets():
             
     bullets = new_bullets
 def draw_player_car(x, y, z=0):
+    # Wheels
+    for dx in [-30, 30]:
+        for dy in [-60, 60]:
+            glPushMatrix()
+            glColor3f(0, 0, 0)
+            glTranslatef(x + dx, y + dy, z + 5)
+            glutSolidTorus(2, 10, 8, 8)
+            glPopMatrix()
+
     # Body
     glPushMatrix()
     glColor3f(1, 1, 0)  # Yellow
@@ -188,14 +204,7 @@ def draw_player_car(x, y, z=0):
     glutSolidCube(1)
     glPopMatrix()
 
-    # Wheels
-    for dx in [-30, 30]:
-        for dy in [-60, 60]:
-            glPushMatrix()
-            glColor3f(0, 0, 0)
-            glTranslatef(x + dx, y + dy, z + 5)
-            glutSolidTorus(2, 10, 8, 8)
-            glPopMatrix()
+    
             
 def draw_police_car(x, y, z=0):
     # Body
@@ -230,7 +239,7 @@ def draw_obstacle_car(x, y, z=0):
     glPopMatrix()
 
 def keyboardListener(key, x, y):
-    global cheat_mode, fp_view, camera_pos, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
+    global cheat_mode, total_bullet, fp_view, camera_pos, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
@@ -252,8 +261,12 @@ def keyboardListener(key, x, y):
         fp_view = False
         bullets.clear()
     elif key == b' ':
-        car_x = lane[car_pos]
-        bullets.append({'x': car_x, 'y': 300, 'z': 15})
+        if(total_bullet > 0):
+            car_x = lane[car_pos]
+            bullets.append({'x': car_x, 'y': 300, 'z': 15})
+            total_bullet -= 1
+    
+
 
 def specialKeyListener(key, x, y):
     if(game_over): return
@@ -315,20 +328,42 @@ def road_line():
     glutSolidCube(1)
     glPopMatrix()
 
+def wheel(x, y, z):
+    glPushMatrix()
+    glColor3f(0, 0, 0)  # black color
+    glTranslatef(x, y, z)
+    glRotatef(90, 0, 1, 0)
+
+    quad = gluNewQuadric()
+    # Draw wheel side (cylinder body)
+    gluCylinder(quad, 30, 30, 20, 50, 10)  # radius, height, slices, stacks
+
+    # Draw front face
+    glPushMatrix()
+    gluDisk(quad, 10, 30, 50, 1)  # inner radius (hole), outer radius
+    glPopMatrix()
+
+    # Draw back face
+    glPushMatrix()
+    glTranslatef(0, 0, 20)
+    gluDisk(quad, 20, 30, 50, 1)
+    glPopMatrix()
+
+    gluDeleteQuadric(quad)
+    glPopMatrix()
+
 def car_show():
     # Player car (detailed sports car appearance)
+    global camera_pos
+    wheel(lane[car_pos] + 30, 250, -10)
+    wheel(lane[car_pos] + 30, 350, -10)
+    wheel(lane[car_pos] - 50, 250, -10)
+    wheel(lane[car_pos] - 50, 350, -10)
+
+
+
     glPushMatrix()
     glTranslatef(lane[car_pos], 300, 0)
-    
-# Wheels
-    for x_offset in [-60, 60]:
-        for z_offset in [-25, 25]:
-            glPushMatrix()
-            glColor3f(0.1, 0.1, 0.1)  # Black tires
-            glTranslatef(x_offset, 0, z_offset)
-            glRotatef(90, 0, 1, 0)
-            glutSolidTorus(10, 15, 10, 10)
-            glPopMatrix()
     
     # Main body
     glPushMatrix()
@@ -345,6 +380,14 @@ def car_show():
     glutSolidCube(1)
     glPopMatrix()
     glPopMatrix()
+    
+
+    
+
+    if(fp_view):
+        camera_pos = (lane[car_pos], 290, 100)
+    else:
+        camera_pos = (0,500,300)
 
 def random_obstacle():
     glPushMatrix()
@@ -476,6 +519,7 @@ def showScreen():
         draw_text(760, 750, "Police is chasing")
     elif(hit == 2):
         draw_text(700, 750, "Game Over! Press 'R' to restart")
+    draw_text(10, 730, f"Total Bullets Remaining {total_bullet}")
 
     draw_road_surroundings()
     move_and_draw_bullets()
