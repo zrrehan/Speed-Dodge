@@ -102,7 +102,10 @@ def draw_sky():
         draw_moon()
     elif sky_transition > 0.8:
         draw_clouds()
-
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
 def draw_hole():
     if not hole_active:
         return
