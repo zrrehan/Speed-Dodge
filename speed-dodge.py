@@ -316,18 +316,35 @@ def road_line():
     glPopMatrix()
 
 def car_show():
-    global camera_pos
+    # Player car (detailed sports car appearance)
     glPushMatrix()
-    glColor3f(1, 1, 0)
     glTranslatef(lane[car_pos], 300, 0)
-    glScalef(100, 200, 20)
+    
+# Wheels
+    for x_offset in [-60, 60]:
+        for z_offset in [-25, 25]:
+            glPushMatrix()
+            glColor3f(0.1, 0.1, 0.1)  # Black tires
+            glTranslatef(x_offset, 0, z_offset)
+            glRotatef(90, 0, 1, 0)
+            glutSolidTorus(10, 15, 10, 10)
+            glPopMatrix()
+    
+    # Main body
+    glPushMatrix()
+    glColor3f(0, 0.5, 1)  # Bright blue
+    glScalef(80, 160, 40)
     glutSolidCube(1)
     glPopMatrix()
-
-    if(fp_view):
-        camera_pos = (lane[car_pos], 290, 100)
-    else:
-        camera_pos = (0,500,300)
+    
+    # Windshield
+    glPushMatrix()
+    glColor3f(0.7, 0.9, 1)  # Light blue glass
+    glTranslatef(0, 40, 30)
+    glScalef(70, 60, 5)
+    glutSolidCube(1)
+    glPopMatrix()
+    glPopMatrix()
 
 def random_obstacle():
     glPushMatrix()
@@ -368,13 +385,52 @@ def move_obstacle():
         
 
 def police_show():
+    # Police car (realistic design)
+    glPushMatrix()
+    glTranslatef(lane[police_pos], police_y, 0)
+    
+   # Wheels
+    for x_offset in [-60, 60]:
+        for z_offset in [-25, 25]:
+            glPushMatrix()
+            glColor3f(0.2, 0.4, 0.2)  # Black tires
+            glTranslatef(x_offset, 0, z_offset)
+            glRotatef(90, 0, 1, 0)
+            glutSolidTorus(10, 15, 10, 10)
+            glPopMatrix()
+    
+    
+    # Main body
+    glPushMatrix()
+    glColor3f(0.9, 0.9, 0.9)  # White base
+    glScalef(80, 160, 40)
+    glutSolidCube(1)
+    glPopMatrix()
+    
+    # Police stripe
+    glPushMatrix()
+    glColor3f(0, 0, 0.8)  # Blue stripe
+    glTranslatef(0, 0, 25)
+    glScalef(85, 30, 5)
+    glutSolidCube(1)
+    glPopMatrix()
+    
+    # Light bar
+    glPushMatrix()
+    glColor3f(0.8, 0, 0)  # Red lights
+    glTranslatef(0, 80, 35)
+    glScalef(60, 10, 10)
+    glutSolidCube(1)
+    glPopMatrix()
+    glPopMatrix()
+
+def police_show():
     glPushMatrix()
     glColor3f(1, 0, 0)
     glTranslatef(lane[car_pos], police_y, 0)
     glScalef(100, 200, 20)
     glutSolidCube(1)
     glPopMatrix()
-
 def showScreen():
     """
     Display function to render the game scene:
@@ -444,8 +500,8 @@ def main():
     glutDisplayFunc(showScreen)  # Register display function
     glutKeyboardFunc(keyboardListener)  # Register keyboard listener
     glutSpecialFunc(specialKeyListener)
-    glutIdleFunc(idle)  # Register the idle function to move the bullet automatically
-
+    glutIdleFunc(idle) # Register the idle function to move the bullet automatically
+    glutReshapeFunc(reshape)
     glutMainLoop()  # Enter the GLUT main loop
 
 if __name__ == "__main__":
