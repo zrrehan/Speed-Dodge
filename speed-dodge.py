@@ -600,7 +600,6 @@ def move_obstacle():
         obstacle_y = 120
 
     if(cheat_mode and 50 <= hole_y <= 150 and hole_x == lane[car_pos]):
-        print("hello cheat")
         if(car_pos == 2):
             car_pos -= 1
         elif(car_pos == 1):
