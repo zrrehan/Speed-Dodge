@@ -23,6 +23,9 @@ obstacle_speed = 1
 cheat_mode = False
 hit = 0
 fp_view = False
+bullets = []
+bullet_speed = 10
+bullet_hit_count = 0
 
 
 def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
@@ -140,7 +143,34 @@ def draw_road_surroundings():
                 z = z_top - 20 * math.sin(math.pi * t_norm) #center point
                 glVertex3f(x, y, z)
             glEnd()
+def move_and_draw_bullets():
+    global bullets, obstacle_x, obstacle_y, bullet_hit_count
 
+    new_bullets = []
+    for bullet in bullets:
+        bullet['y'] -= bullet_speed
+        
+        # Draw bullet
+        glPushMatrix()
+        glColor3f(1, 1, 1)
+        glTranslatef(bullet['x'], bullet['y'], bullet['z'])
+        glutSolidSphere(10, 10, 10)
+        glPopMatrix()
+
+        # Check for collision
+        if abs(bullet['x'] - obstacle_x) < 50 and abs(bullet['y'] - obstacle_y) < 50:
+            bullet_hit_count += 1
+            if bullet_hit_count == 3:
+                obstacle_y = -600
+                obstacle_x = random.choice([400, 0, -400])
+                bullet_hit_count = 0
+            continue 
+        
+       # Only keep bullets that are still on screen
+        if bullet['y'] > -600:
+            new_bullets.append(bullet)
+            
+    bullets = new_bullets
 def draw_player_car(x, y, z=0):
     # Body
     glPushMatrix()
@@ -220,7 +250,10 @@ def keyboardListener(key, x, y):
         cheat_mode = False
         hit = 0
         fp_view = False
-
+        bullets.clear()
+    elif key == b' ':
+        car_x = lane[car_pos]
+        bullets.append({'x': car_x, 'y': 300, 'z': 15})
 
 def specialKeyListener(key, x, y):
     if(game_over): return
@@ -389,11 +422,17 @@ def showScreen():
         draw_text(700, 750, "Game Over! Press 'R' to restart")
 
     draw_road_surroundings()
-
+    move_and_draw_bullets()
     # Swap buffers for smooth rendering (double buffering)
     glutSwapBuffers()
 
-
+def reshape(w, h):
+    glViewport(0, 0, w, h)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(60.0, w / float(h or 1), 1.0, 100.0)
+    glMatrixMode(GL_MODELVIEW)
+    
 # Main function to set up OpenGL window and loop
 def main():
     glutInit()
