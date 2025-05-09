@@ -35,11 +35,13 @@ power_show = False
 power_x = 0
 power_y = -600
 power_obtained = False
+power_prev_point = 0
+obstacle_speed_prev = 0 
 
 def power_showcase():
     glPushMatrix()
     glColor3f(0.8, 0.5, 0.1)
-    glTranslatef(0, power_y, 0) 
+    glTranslatef(power_x, power_y, 0) 
     gluSphere(gluNewQuadric(), 40, 10, 10)  # parameters are: quadric, radius, slices, stacks
     glPopMatrix()
 
@@ -435,7 +437,7 @@ def random_obstacle():
     glPopMatrix()
 
 def move_obstacle():
-    global obstacle_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color, power_show, power_y
+    global obstacle_y,obstacle_speed_prev,power_prev_point,power_x, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color, power_show, power_y, power_obtained
     if(game_over): return
     if(obstacle_y >= 600):
         obstacle_x = random.choice([400, 0, -400])
@@ -451,7 +453,7 @@ def move_obstacle():
     else:
         obstacle_y += obstacle_speed
     
-    if(obstacle_x == lane[car_pos] and 120 <= obstacle_y <= 250 ):
+    if(obstacle_x == lane[car_pos] and 120 <= obstacle_y <= 250 and not power_obtained ):
         obstacle_x = random.choice([400, 0, -400])
         obstacle_y = -600
         hit += 1
@@ -469,9 +471,10 @@ def move_obstacle():
             car_pos += 1
         obstacle_y = 120
     
-    if(point % 5 == 0 and point != 0):
+    if(point % 5 == 0 and point != 0 and obstacle_speed_prev == 0):
         if(not power_show):
             power_show = True
+            power_x = random.choice([400, 0, -400])
     
     if(power_show):
         power_showcase()
@@ -479,6 +482,21 @@ def move_obstacle():
         if(power_y >= 600):
             power_show = False
             power_y = -600
+        ##############################################################
+    if(power_x == lane[car_pos] and 120 <= power_y <= 330):
+        power_y = 631
+        power_obtained = True
+        obstacle_speed_prev = obstacle_speed
+        power_prev_point = point
+        obstacle_speed = 10
+    
+    if(power_obtained and power_prev_point + 7 == point):
+        obstacle_speed = obstacle_speed_prev
+        power_obtained = False
+        obstacle_speed_prev = 0
+
+
+
         
         
 
