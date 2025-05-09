@@ -754,6 +754,11 @@ def showScreen():
     elif(hit == 2):
         draw_text(700, 750, "Game Over! Press 'R' to restart")
     draw_text(10, 730, f"Total Bullets Remaining {total_bullet}")
+    draw_text(10, 710, f"Press 'n' - Nightmare Mode")
+    draw_text(10, 690, f"Press 'c' - Cheat Mode")
+    draw_text(10, 670, f"Press 'd' - Day")
+    draw_text(10, 650, f"Press 'b' - Night")
+    draw_text(10, 630, f"Press 'space' - For Shoot")
 
     draw_road_surroundings()
     move_and_draw_bullets()
