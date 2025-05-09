@@ -29,6 +29,8 @@ bullet_hit_count = 0
 total_bullet = 3
 nightmare = False
 nightmare_prev_speed = 0 
+color = 0
+wind_shield = 30
 
 
 def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
@@ -180,31 +182,7 @@ def move_and_draw_bullets():
             new_bullets.append(bullet)
             
     bullets = new_bullets
-def draw_player_car(x, y, z=0):
-    # Wheels
-    for dx in [-30, 30]:
-        for dy in [-60, 60]:
-            glPushMatrix()
-            glColor3f(0, 0, 0)
-            glTranslatef(x + dx, y + dy, z + 5)
-            glutSolidTorus(2, 10, 8, 8)
-            glPopMatrix()
 
-    # Body
-    glPushMatrix()
-    glColor3f(1, 1, 0)  # Yellow
-    glTranslatef(x, y, z + 15)
-    glScalef(100, 200, 30)
-    glutSolidCube(1)
-    glPopMatrix()
-
-    # Windshield
-    glPushMatrix()
-    glColor3f(0.1, 0.1, 0.1)
-    glTranslatef(x, y, z + 35)
-    glScalef(60, 100, 10)
-    glutSolidCube(1)
-    glPopMatrix()
 
     
             
@@ -262,6 +240,7 @@ def keyboardListener(key, x, y):
         hit = 0
         fp_view = False
         bullets.clear()
+        nightmare = False
     elif key == b' ':
         if(total_bullet > 0):
             car_x = lane[car_pos]
@@ -364,7 +343,7 @@ def wheel(x, y, z):
 
 def car_show():
     # Player car (detailed sports car appearance)
-    global camera_pos
+    global camera_pos, wind_shield
     wheel(lane[car_pos] + 30, 250, -10)
     wheel(lane[car_pos] + 30, 350, -10)
     wheel(lane[car_pos] - 50, 250, -10)
@@ -377,18 +356,30 @@ def car_show():
     
     # Main body
     glPushMatrix()
-    glColor3f(0, 0.5, 1)  # Bright blue
+    glColor3f(0, 0.5, color)  
     glScalef(80, 160, 40)
     glutSolidCube(1)
     glPopMatrix()
     
+
+    if(point >= 3):
+        glPushMatrix()
+        glColor3f(0, 0.4, color)  
+        glTranslatef(0, 40, 30)
+        glScalef(70, 60, 55)
+        glutSolidCube(1)
+        glPopMatrix()
+        wind_shield = 55
+    
+
     # Windshield
     glPushMatrix()
     glColor3f(0.7, 0.9, 1)  # Light blue glass
-    glTranslatef(0, 40, 30)
+    glTranslatef(0, 40, wind_shield)
     glScalef(70, 60, 5)
     glutSolidCube(1)
     glPopMatrix()
+
     glPopMatrix()
     
 
@@ -399,6 +390,30 @@ def car_show():
     else:
         camera_pos = (0,500,300)
 
+def back_light():
+    glPushMatrix()
+    glColor3f(1, 0, 0)
+    glTranslatef(lane[car_pos], 375, 0)
+    glScalef(4, 0, 1)
+    glutSolidCube(20)
+    glPopMatrix()
+
+def front_light():
+    glPushMatrix()
+    glColor3f(0.3, 1, 0.5)
+    glTranslatef(lane[car_pos] + 40, 230, 0)
+    glRotatef(90, 1, 0, 0)  # parameters are: angle, x, y, z
+    gluCylinder(gluNewQuadric(), 5, 40, 100, 10, 10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glColor3f(0.3, 1, 0.5)
+    glTranslatef(lane[car_pos] - 40, 230, 0)
+    glRotatef(90, 1, 0, 0)  # parameters are: angle, x, y, z
+    gluCylinder(gluNewQuadric(), 5, 40, 100, 10, 10)
+    glPopMatrix()
+    
+
 def random_obstacle():
     glPushMatrix()
     glColor3f(0, 1, 1)
@@ -407,12 +422,17 @@ def random_obstacle():
     glPopMatrix()
 
 def move_obstacle():
-    global obstacle_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos
+    global obstacle_y, obstacle_x, point, game_over, hit, police_y, obstacle_speed, car_pos, color
     if(game_over): return
     if(obstacle_y >= 600):
         obstacle_x = random.choice([400, 0, -400])
         obstacle_y = -600
         point += 1
+        if(color < 1):
+            color += 0.03 
+            if(color > 1):
+                color = 1 
+
         if(point <= 220):
             obstacle_speed += 0.1
     else:
@@ -513,9 +533,16 @@ def showScreen():
 
     random_obstacle()
     move_obstacle()
-    car_show()
+    if(point >=10):
+        front_light()
+    
 
+    car_show()
+    
+    if(point >= 5):
+        back_light()
     police_show()
+    
 
 
     # Display game info text at a fixed screen position
