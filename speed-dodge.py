@@ -45,7 +45,8 @@ hole_hit = False
 hole_timer = 0
 hole_z_rise = 200 
 sky_mode = "day"        # 'day' or 'night'
-sky_transition = 1.0  # 1.0 = full day, 0.0 = full night
+sky_transition = 1.0  
+sky_color = [0.5, 0.8, 0.92, 1.0]#
 
 def draw_circle(x, y, radius):
     glBegin(GL_TRIANGLE_FAN)
@@ -67,11 +68,24 @@ def draw_clouds():
     draw_circle(-0.55, 0.87, 0.08)
     draw_circle(-0.5, 0.85, 0.07)
 
-
 def draw_sky():
-    global sky_transition
+    global sky_transition, sky_color
 
-    # Interpolate between night and day colors
+    # Set based on sky_mode directly
+    if sky_mode == "day":
+        for i in range(len(sky_color) -1):
+            sky_color[i] += 0.005
+            if(i == 0 and sky_color[i] >= 0.5): sky_color[i] = 0.5
+            if(i == 1 and sky_color[i] >= 0.8): sky_color[i] = 0.8
+            if(i == 2 and sky_color[i] >= 0.92): sky_color[i] = 0.92
+            if(i == 3 and sky_color[i] >= 1): sky_color[i] = 1
+    elif sky_mode == "night":
+        for i in range(len(sky_color) -1):
+            sky_color[i] -= 0.005
+            if(sky_color[i] < 0.13):
+                sky_color[i] = 0
+    glClearColor(sky_color[0], sky_color[1],sky_color[2], 1.0)
+
     r = sky_transition * 0.53
     g = sky_transition * 0.81
     b = sky_transition * 0.92 + (1 - sky_transition) * 0.05
@@ -313,7 +327,7 @@ def draw_obstacle_car(x, y, z=0):
     glPopMatrix()
 
 def keyboardListener(key, x, y):
-    global cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over,  hole_x, hole_y, hole_active, hole_hit, hole_timer, hole_z_rise
+    global sky_mode,sky_transition, cheat_mode,color, wind_shield, total_bullet, fp_view, camera_pos, nightmare_prev_speed, nightmare, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over,  hole_x, hole_y, hole_active, hole_hit, hole_timer, hole_z_rise,
     if(key == b"c"):
         cheat_mode = not cheat_mode
     if(key == b"f"):
@@ -343,11 +357,15 @@ def keyboardListener(key, x, y):
         hole_hit = False
         hole_timer = 0
         hole_z_rise = 200 
-    elif key == b' ':
-        if(total_bullet > 0):
-            car_x = lane[car_pos]
-            bullets.append({'x': car_x, 'y': 300, 'z': 15})
-            total_bullet -= 1
+   elif key == b'b':
+        sky_mode = "night"
+        sky_transition = 0.0
+    elif key == b'd':
+        sky_mode = "day"
+        if sky_transition < 1.0:
+            sky_transition += 0.1
+            if sky_transition > 1.0:
+                sky_transition=1.0 
     
     if(key == b"n"):
         nightmare = not nightmare
@@ -665,6 +683,9 @@ def showScreen():
     glVertex3f(-600, +600, 0)
     glVertex3f(600, 600, 0)
     glEnd()
+    draw_sky()
+    
+    
     #hole
     update_hole()           
     draw_hole()             
