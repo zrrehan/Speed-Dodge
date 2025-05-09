@@ -44,6 +44,50 @@ hole_active = True
 hole_hit = False
 hole_timer = 0
 hole_z_rise = 200 
+sky_mode = "day"        # 'day' or 'night'
+sky_transition = 1.0  # 1.0 = full day, 0.0 = full night
+
+def draw_circle(x, y, radius):
+    glBegin(GL_TRIANGLE_FAN)
+    glVertex2f(x, y)
+    for angle in range(0, 361, 10):
+        glVertex2f(x + radius * math.cos(math.radians(angle)),
+                   y + radius * math.sin(math.radians(angle)))
+    glEnd()
+
+
+def draw_moon():
+    glColor3f(1.0, 1.0, 0.8)
+    draw_circle(0.7, 0.8, 0.1)
+
+
+def draw_clouds():
+    glColor3f(1.0, 1.0, 1.0)
+    draw_circle(-0.6, 0.85, 0.07)
+    draw_circle(-0.55, 0.87, 0.08)
+    draw_circle(-0.5, 0.85, 0.07)
+
+
+def draw_sky():
+    global sky_transition
+
+    # Interpolate between night and day colors
+    r = sky_transition * 0.53
+    g = sky_transition * 0.81
+    b = sky_transition * 0.92 + (1 - sky_transition) * 0.05
+
+    glColor3f(r, g, b)
+    glBegin(GL_QUADS)
+    glVertex2f(-1, 1)
+    glVertex2f(1, 1)
+    glVertex2f(1, 0)
+    glVertex2f(-1, 0)
+    glEnd()
+
+    if sky_transition < 0.5:
+        draw_moon()
+    elif sky_transition > 0.8:
+        draw_clouds()
 
 def draw_hole():
     if not hole_active:
