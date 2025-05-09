@@ -141,7 +141,63 @@ def draw_road_surroundings():
                 glVertex3f(x, y, z)
             glEnd()
 
+def draw_player_car(x, y, z=0):
+    # Body
+    glPushMatrix()
+    glColor3f(1, 1, 0)  # Yellow
+    glTranslatef(x, y, z + 15)
+    glScalef(100, 200, 30)
+    glutSolidCube(1)
+    glPopMatrix()
 
+    # Windshield
+    glPushMatrix()
+    glColor3f(0.1, 0.1, 0.1)
+    glTranslatef(x, y, z + 35)
+    glScalef(60, 100, 10)
+    glutSolidCube(1)
+    glPopMatrix()
+
+    # Wheels
+    for dx in [-30, 30]:
+        for dy in [-60, 60]:
+            glPushMatrix()
+            glColor3f(0, 0, 0)
+            glTranslatef(x + dx, y + dy, z + 5)
+            glutSolidTorus(2, 10, 8, 8)
+            glPopMatrix()
+            
+def draw_police_car(x, y, z=0):
+    # Body
+    glPushMatrix()
+    glColor3f(1, 0, 0)  # Red
+    glTranslatef(x, y, z + 15)
+    glScalef(100, 200, 30)
+    glutSolidCube(1)
+    glPopMatrix()
+
+    # Roof lights
+    glPushMatrix()
+    glColor3f(0, 0, 1)  # Blue light
+    glTranslatef(x - 20, y, z + 40)
+    glScalef(10, 30, 10)
+    glutSolidCube(1)
+    glPopMatrix()
+
+    glPushMatrix()
+    glColor3f(1, 1, 1)  # White light
+    glTranslatef(x + 20, y, z + 40)
+    glScalef(10, 30, 10)
+    glutSolidCube(1)
+    glPopMatrix()
+
+def draw_obstacle_car(x, y, z=0):
+    glPushMatrix()
+    glColor3f(0, 1, 1)  # Cyan
+    glTranslatef(x, y, z + 15)
+    glScalef(100, 200, 30)
+    glutSolidCube(1)
+    glPopMatrix()
 
 def keyboardListener(key, x, y):
     global cheat_mode, fp_view, camera_pos, point, road_line_y, car_pos, lane, obstacle_x, obstacle_y, police_pos, hit, obstacle_speed, police_y, game_over
